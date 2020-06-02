@@ -31,9 +31,12 @@ public class MouseController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        currFramePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        currFramePosition.z = 0;
+        CheckMouseScroll();
         CheckKeyboardScroll();
         CheckZoom();
-        CheckMouseScroll();
+        
 
     }
 
@@ -61,8 +64,7 @@ public class MouseController : MonoBehaviour
     {
         //Mouse panning and selection of correct tile from Mouse position
 
-        currFramePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        currFramePosition.z = 0;
+        
 
         Tile tileUnderMouse = WorldController.Instance.GetTileAtWorldCoordinate(currFramePosition);
 
@@ -78,23 +80,45 @@ public class MouseController : MonoBehaviour
         if(Input.GetMouseButtonDown(0))
         {
             dragStartPosition = currFramePosition;
+           // selectionBox.anchoredPosition = new Vector2((dragStartPosition.x), (dragStartPosition.y));
+
         }
 
         //Left mouse button held down
         if (Input.GetMouseButton(0))
         {
-            //UpdateSelectionBox(dragStartPosition);
-          
+                    
             if(!selectionBox.gameObject.activeInHierarchy)
                 selectionBox.gameObject.SetActive(true);
-                Debug.Log(currFramePosition + "Curr Cursor");
-                Debug.Log(dragStartPosition + "Start Position");
-                Vector3 diff = currFramePosition - dragStartPosition;
-                Debug.Log(diff + "difference");
-            //selectionBox.sizeDelta = new Vector2(Mathf.Abs(diff.x), Mathf.Abs(diff.y));
-                selectionBox.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, diff.x);
-                selectionBox.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, diff.y);
-                selectionBox.anchoredPosition = new Vector2((dragStartPosition).x, (dragStartPosition).y);        
+
+            
+            Vector3 diff = currFramePosition - dragStartPosition;
+            //Debug.Log(diff + ": DIFFERENCE");
+            if (diff.x < 0 && diff.y < 0)
+            {
+                diff.x = -diff.x;
+                diff.y = -diff.y;
+                
+                selectionBox.anchoredPosition = new Vector2((currFramePosition.x), (currFramePosition.y));
+            }
+            else if(diff.x < 0 && diff.y > 0)
+            {
+                diff.x = -diff.x;
+                selectionBox.anchoredPosition = new Vector2(currFramePosition.x, dragStartPosition.y);
+
+            } else if(diff.x > 0 && diff.y < 0)
+            {
+                diff.y = -diff.y;
+                selectionBox.anchoredPosition = new Vector2(dragStartPosition.x, currFramePosition.y);
+            } else
+            {
+                selectionBox.anchoredPosition = new Vector2((dragStartPosition.x), (dragStartPosition.y));
+
+            }
+            selectionBox.sizeDelta = diff;
+
+            //selectionBox.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, diff.x);
+            //selectionBox.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, diff.y);
 
         }
 
@@ -137,14 +161,15 @@ public class MouseController : MonoBehaviour
             }
         }
 
+        
         if (Input.GetMouseButton(2))
         {
             Vector3 diff = lastFramePosition - currFramePosition;
             Camera.main.transform.Translate(diff);
         }
-
         lastFramePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         lastFramePosition.z = 0;
+
     }
 
     void UpdateSelectionBox(Vector3 dragStartPosition)
