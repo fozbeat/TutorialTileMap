@@ -16,7 +16,9 @@ public class MouseController : MonoBehaviour
 
     Vector3 lastFramePosition;
     Vector3 dragStartPosition;
+    Vector3 currFramePosition;
     public GameObject selectionTileAura;
+    public RectTransform selectionBox;
 
     // Start is called before the first frame update
     void Start()
@@ -59,7 +61,7 @@ public class MouseController : MonoBehaviour
     {
         //Mouse panning and selection of correct tile from Mouse position
 
-        Vector3 currFramePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        currFramePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         currFramePosition.z = 0;
 
         Tile tileUnderMouse = WorldController.Instance.GetTileAtWorldCoordinate(currFramePosition);
@@ -72,20 +74,39 @@ public class MouseController : MonoBehaviour
         else
             selectionTileAura.SetActive(false);
 
-        //Multiple selection
-
         //First left click. Start drag.
         if(Input.GetMouseButtonDown(0))
         {
             dragStartPosition = currFramePosition;
         }
 
-        //End drag
-        if(Input.GetMouseButtonUp(0))
+        //Left mouse button held down
+        if (Input.GetMouseButton(0))
         {
+            //UpdateSelectionBox(dragStartPosition);
+          
+            if(!selectionBox.gameObject.activeInHierarchy)
+                selectionBox.gameObject.SetActive(true);
+                Debug.Log(currFramePosition + "Curr Cursor");
+                Debug.Log(dragStartPosition + "Start Position");
+                Vector3 diff = currFramePosition - dragStartPosition;
+                Debug.Log(diff + "difference");
+            //selectionBox.sizeDelta = new Vector2(Mathf.Abs(diff.x), Mathf.Abs(diff.y));
+                selectionBox.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, diff.x);
+                selectionBox.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, diff.y);
+                selectionBox.anchoredPosition = new Vector2((dragStartPosition).x, (dragStartPosition).y);        
+
+        }
+
+
+        //End drag
+        if (Input.GetMouseButtonUp(0))
+        {
+            selectionBox.gameObject.SetActive(false);
+
             int start_x = Mathf.FloorToInt(dragStartPosition.x);
             int end_x = Mathf.FloorToInt(currFramePosition.x);
-
+                
             int start_y = Mathf.FloorToInt(dragStartPosition.y);
             int end_y = Mathf.FloorToInt(currFramePosition.y);
 
@@ -125,6 +146,14 @@ public class MouseController : MonoBehaviour
         lastFramePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         lastFramePosition.z = 0;
     }
+
+    void UpdateSelectionBox(Vector3 dragStartPosition)
+    {
+        //Vector3 currCursorPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        //currCursorPosition.z = 0f;
+        
+    }
+    
 
     
 }
