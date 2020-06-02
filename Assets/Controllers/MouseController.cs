@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-
+using UnityEditor;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class MouseController : MonoBehaviour
 {
@@ -15,12 +16,14 @@ public class MouseController : MonoBehaviour
 
     Vector3 lastFramePosition;
     Vector3 dragStartPosition;
-    public GameObject selectionBox;
+    public GameObject selectionTileAura;
 
     // Start is called before the first frame update
     void Start()
     {
-
+       selectionTileAura = Instantiate(selectionTileAura);
+       selectionTileAura.name = "SelectionTileAura";
+       selectionTileAura.transform.parent = this.transform; 
     }
 
     // Update is called once per frame
@@ -59,18 +62,15 @@ public class MouseController : MonoBehaviour
         Vector3 currFramePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         currFramePosition.z = 0;
 
-        Tile tileUnderMouse = GetTileAtWorldCoordinate(currFramePosition);
+        Tile tileUnderMouse = WorldController.Instance.GetTileAtWorldCoordinate(currFramePosition);
 
-        if (tileUnderMouse != null)
-        {
-            selectionBox.SetActive(true);
+        if(tileUnderMouse != null) { 
+            selectionTileAura.SetActive(true);
             Vector3 cursorPosition = new Vector3(tileUnderMouse.X, tileUnderMouse.Y, 0);
-            
-            selectionBox.transform.position = cursorPosition;
-            
+            selectionTileAura.transform.position = cursorPosition;
         }
         else
-            selectionBox.SetActive(false);
+            selectionTileAura.SetActive(false);
 
         //Multiple selection
 
@@ -126,14 +126,5 @@ public class MouseController : MonoBehaviour
         lastFramePosition.z = 0;
     }
 
-    Tile GetTileAtWorldCoordinate(Vector3 coord)
-    {
-        int x = Mathf.FloorToInt(coord.x);
-        int y = Mathf.FloorToInt(coord.y);
-
-        //A null is returned when the coordinates passed to GetTileAt is invalid or out of bounds
-        return WorldController.Instance.World.GetTileAt(x, y);
-
-
-    }
+    
 }

@@ -72,5 +72,15 @@ public class WorldController : MonoBehaviour
         
     }
 
+    public Tile GetTileAtWorldCoordinate(Vector3 coord)
+    {
+        int x = Mathf.FloorToInt(coord.x);
+        int y = Mathf.FloorToInt(coord.y);
+
+        //A null is returned when the coordinates passed to GetTileAt is invalid or out of bounds
+        return WorldController.Instance.World.GetTileAt(x, y);
+
+
+    }
 
 }
