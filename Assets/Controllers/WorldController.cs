@@ -9,6 +9,8 @@ public class WorldController : MonoBehaviour
 
     public Sprite floorSprite;
 
+     
+
     
     public World World { get; protected set; }
     // Start is called before the first frame update
@@ -81,6 +83,40 @@ public class WorldController : MonoBehaviour
         return WorldController.Instance.World.GetTileAt(x, y);
 
 
+    }
+
+    public List<Tile> GetTilesUnderSelection(Vector3 selectionStart, Vector3 selectionEnd)
+    {
+        List<Tile> selectedTiles = new List<Tile>();
+        
+        int startX = Mathf.FloorToInt(selectionStart.x);
+        int startY = Mathf.FloorToInt(selectionEnd.y);
+        int endX = Mathf.FloorToInt(selectionStart.x);
+        int endY = Mathf.FloorToInt(selectionEnd.y);
+
+        if (endX < startX)
+        {
+            int temp = startX;
+            startX = endX;
+            endX = temp;
+        }
+
+        if (endY < startY)
+        {
+            int temp = startY;
+            startY = endY;
+            endY = temp;
+        }
+
+        for (int x = startX; x <= endX; x++)
+        {
+            for (int y = startY; y <= endY; y++)
+            {
+                selectedTiles.Add(GetTileAtWorldCoordinate(new Vector3(x, y, 0)));
+                
+            }
+        }
+        return selectedTiles;
     }
 
 }
