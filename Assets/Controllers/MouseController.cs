@@ -17,14 +17,21 @@ public class MouseController : MonoBehaviour
     Vector3 lastFramePosition;
     Vector3 dragStartPosition;
     Vector3 currFramePosition;
+
+    GameObject selectedTile;
     public GameObject selectionTileAura;
     public RectTransform selectionBox;
+
+    List<GameObject> allSelectedTiles = new List<GameObject>();
+    bool firstClickFlag = false;
+
+
 
     // Start is called before the first frame update
     void Start()
     {
        selectionTileAura = Instantiate(selectionTileAura);
-       selectionTileAura.name = "SelectionTileAura";
+       selectionTileAura.name = "SelectionHoverAura";
        selectionTileAura.transform.SetParent(this.transform, true); 
     }
 
@@ -33,6 +40,7 @@ public class MouseController : MonoBehaviour
     {
         currFramePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         currFramePosition.z = 0;
+        
         CheckMouseScroll();
         CheckKeyboardScroll();
         CheckZoom();
@@ -62,103 +70,30 @@ public class MouseController : MonoBehaviour
 
     void CheckMouseScroll()
     {
-        //Mouse panning and selection of correct tile from Mouse position
+        //Selection aura over mouse pointer
+        HoverSelectionAura(selectionTileAura);
 
         
-
-        Tile tileUnderMouse = WorldController.Instance.GetTileAtWorldCoordinate(currFramePosition);
-
-        if(tileUnderMouse != null) { 
-            selectionTileAura.SetActive(true);
-            Vector3 cursorPosition = new Vector3(tileUnderMouse.X, tileUnderMouse.Y, 0);
-            selectionTileAura.transform.position = cursorPosition;
-        }
-        else
-            selectionTileAura.SetActive(false);
-
-        //First left click. Start drag.
-        if(Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0))
         {
+            //Position where user started drag
             dragStartPosition = currFramePosition;
-           // selectionBox.anchoredPosition = new Vector2((dragStartPosition.x), (dragStartPosition.y));
-
+            firstClickFlag = true;
+            
         }
 
-        //Left mouse button held down
         if (Input.GetMouseButton(0))
         {
-                 
-           
+
+            CursorDragSelectionBox(selectionBox, dragStartPosition, currFramePosition);
+            SelectionAuraOnDrag(selectionTileAura, dragStartPosition, currFramePosition);
+
             //List<Tile> tilesUnderSelection = WorldController.Instance.GetTilesUnderSelection(Vector3(), currFramePosition);
             //SelectTiles(tilesUnderSelection);
 
 
-            if (!selectionBox.gameObject.activeInHierarchy)
-                selectionBox.gameObject.SetActive(true);
-
-            
-            Vector3 diff = currFramePosition - dragStartPosition;
-            //Debug.Log(diff + ": DIFFERENCE");
-            if (diff.x < 0 && diff.y < 0)
-            {
-                diff.x = -diff.x;
-                diff.y = -diff.y;
-                
-                selectionBox.anchoredPosition = new Vector2((currFramePosition.x), (currFramePosition.y));
-            }
-            else if(diff.x < 0 && diff.y > 0)
-            {
-                diff.x = -diff.x;
-                selectionBox.anchoredPosition = new Vector2(currFramePosition.x, dragStartPosition.y);
-
-            } else if(diff.x > 0 && diff.y < 0)
-            {
-                diff.y = -diff.y;
-                selectionBox.anchoredPosition = new Vector2(dragStartPosition.x, currFramePosition.y);
-            } else
-            {
-                selectionBox.anchoredPosition = new Vector2((dragStartPosition.x), (dragStartPosition.y));
-
-            }
-            selectionBox.sizeDelta = diff;
-
             //selectionBox.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, diff.x);
             //selectionBox.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, diff.y);
-            int start_x = Mathf.FloorToInt(dragStartPosition.x);
-            int end_x = Mathf.FloorToInt(currFramePosition.x);
-
-            int start_y = Mathf.FloorToInt(dragStartPosition.y);
-            int end_y = Mathf.FloorToInt(currFramePosition.y);
-
-            //swap if dragging from right to left ie start_x > end_x
-            if (end_x < start_x)
-            {
-                int temp = start_x;
-                start_x = end_x;
-                end_x = temp;
-            }
-
-            if (end_y < start_y)
-            {
-                int temp = start_y;
-                start_y = end_y;
-                end_y = temp;
-            }
-
-            for (int x = start_x; x <= end_x; x++)
-            {
-                for (int y = start_y; y <= end_y; y++)
-                {
-                    GameObject selectedTile = Instantiate(selectionTileAura);
-                    selectedTile.transform.SetParent(this.transform);
-                    selectedTile.name = "SelectedTilesUnderSelection_" + x + "_" + y;
-                    selectedTile.SetActive(true);
-                    selectedTile.transform.position = new Vector3(x, y, 0);
-
-                }
-            }
-
-
 
         }
 
@@ -167,8 +102,9 @@ public class MouseController : MonoBehaviour
         if (Input.GetMouseButtonUp(0))
         {
             selectionBox.gameObject.SetActive(false);
-
-            
+            firstClickFlag = false;
+            //delete objects here
+                        
         }
 
         
@@ -182,6 +118,129 @@ public class MouseController : MonoBehaviour
 
     }
 
+    public void HoverSelectionAura(GameObject selectionTileAura)
+    {
+        Tile tileUnderMouse = WorldController.Instance.GetTileAtWorldCoordinate(currFramePosition);
+
+        if (tileUnderMouse != null)
+        {
+            selectionTileAura.SetActive(true);
+            Vector3 cursorPosition = new Vector3(tileUnderMouse.X, tileUnderMouse.Y, 0);
+            selectionTileAura.transform.position = cursorPosition;
+        }
+        else
+            selectionTileAura.SetActive(false);
+    }
+
+    public void CursorDragSelectionBox(RectTransform selectionBox, Vector3 dragStartPosition, Vector3 currFramePosition)
+    {
+        if (!selectionBox.gameObject.activeInHierarchy)
+            selectionBox.gameObject.SetActive(true);
+
+        Vector3 diff = currFramePosition - dragStartPosition;
+
+        if (diff.x < 0 && diff.y < 0)
+        {
+            diff.x = -diff.x;
+            diff.y = -diff.y;
+
+            selectionBox.anchoredPosition = new Vector2((currFramePosition.x), (currFramePosition.y));
+        }
+        else if (diff.x < 0 && diff.y > 0)
+        {
+            diff.x = -diff.x;
+            selectionBox.anchoredPosition = new Vector2(currFramePosition.x, dragStartPosition.y);
+
+        }
+        else if (diff.x > 0 && diff.y < 0)
+        {
+            diff.y = -diff.y;
+            selectionBox.anchoredPosition = new Vector2(dragStartPosition.x, currFramePosition.y);
+        }
+        else
+        {
+            selectionBox.anchoredPosition = new Vector2((dragStartPosition.x), (dragStartPosition.y));
+
+        }
+        selectionBox.sizeDelta = diff;
+
+    }
+
+    public void SelectionAuraOnDrag(GameObject selectionTileAura, Vector3 dragStartPosition, Vector3 currFramePosition)
+    {
+        int start_x = Mathf.FloorToInt(dragStartPosition.x);
+        int end_x = Mathf.FloorToInt(currFramePosition.x);
+
+        int start_y = Mathf.FloorToInt(dragStartPosition.y);
+        int end_y = Mathf.FloorToInt(currFramePosition.y);
+
+        //swap if dragging from right to left ie start_x > end_x
+        if (end_x < start_x)
+        {
+            int temp = start_x;
+            start_x = end_x;
+            end_x = temp;
+        }
+
+        if (end_y < start_y)
+        {
+            int temp = start_y;
+            start_y = end_y;
+            end_y = temp;
+        }
+
+        for (int x = start_x; x <= end_x; x++)
+        {
+            for (int y = start_y; y <= end_y; y++)
+            {
+                if(firstClickFlag)
+                {
+                    
+                    GameObject selectedTile = Instantiate(selectionTileAura);
+                    selectedTile.name = "MultipleSelectionTiles_" + x + "_" + y;
+                    selectedTile.transform.SetParent(this.transform);
+                    selectedTile.transform.position = new Vector3(x, y, 0);
+                    selectedTile.SetActive(true);
+                    allSelectedTiles.Add(selectedTile);
+                    //Debug.Log(allSelectedTiles[x,y].transform.position);
+                }
+                else
+                {
+                    foreach (GameObject storedSelectedTile in allSelectedTiles)
+                    {
+                        if (storedSelectedTile != null)
+                        {
+                            Debug.Log("Entered if storedSelectedTile != NULL !");
+                            if (storedSelectedTile.transform.position == new Vector3(x, y, 0))
+                            {
+                                Debug.Log("Entered!");
+                                selectedTile.SetActive(true);
+                            }
+                            else
+                            {
+                                Debug.Log("Entered ELSE !");
+                                selectedTile = Instantiate(selectionTileAura);
+                                selectedTile.name = "MultipleSelectionTiles_" + x + "_" + y;
+                                selectedTile.transform.SetParent(this.transform);
+                                selectedTile.transform.position = new Vector3(x, y, 0);
+                                selectedTile.SetActive(true);
+                                allSelectedTiles.Add(selectedTile);
+                            }
+                        }
+                        else
+                        {
+                            Debug.Log("storedSelectedTile is NULL");
+                        }
+                    }
+                }
+
+            }
+        }
+        
+    }
+
+    
+
     //public void SelectTiles(List<Tile> tilesToSelect)
     //{
     //    for (int i = 0; i < tilesToSelect.Count; i++)
@@ -191,7 +250,7 @@ public class MouseController : MonoBehaviour
     //        temp.name = "SelectedTilesUnderSelection_" + i;
     //        temp.transform.position = new Vector3(tilesToSelect[i].X, tilesToSelect[i].Y, 0);
     //        temp.SetActive(true);
-            
+
     //    }
     //}
 

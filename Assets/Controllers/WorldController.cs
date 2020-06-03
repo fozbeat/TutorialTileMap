@@ -48,7 +48,7 @@ public class WorldController : MonoBehaviour
         
         }
 
-        World.RandomzieTiles();
+        World.InitializeWorldTiles(World.Width, World.Height);
 
         
     }

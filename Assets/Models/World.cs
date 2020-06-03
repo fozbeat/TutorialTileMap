@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 public class World 
@@ -7,7 +8,7 @@ public class World
     Tile[,] tiles;
     int width;
 
-    public int Width
+    public int Width 
     {
         get
         {   
@@ -57,20 +58,14 @@ public class World
             return tiles[x, y];
     }
 
-    public void RandomzieTiles()
+    public void InitializeWorldTiles(int width, int height)
     {
-        Debug.Log("RandomzieTiles executed.");
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
             {
-                if(Random.Range(0, 2) == 0)
-                {
-                    tiles[x, y].Type = Tile.TileType.Floor; 
-                } else
-                {
-                    tiles[x, y].Type = Tile.TileType.Floor;
-                }
+                tiles[x, y].Type = Tile.TileType.Floor; 
+                
             }
         }
     }
