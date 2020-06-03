@@ -85,38 +85,38 @@ public class WorldController : MonoBehaviour
 
     }
 
-    public List<Tile> GetTilesUnderSelection(Vector3 selectionStart, Vector3 selectionEnd)
-    {
-        List<Tile> selectedTiles = new List<Tile>();
-        
-        int startX = Mathf.FloorToInt(selectionStart.x);
-        int startY = Mathf.FloorToInt(selectionEnd.y);
-        int endX = Mathf.FloorToInt(selectionStart.x);
-        int endY = Mathf.FloorToInt(selectionEnd.y);
+    //    public List<Tile> GetTilesUnderSelection(Vector3 selectionStart, Vector3 selectionEnd)
+    //    {
+    //        List<Tile> selectedTiles = new List<Tile>();
 
-        if (endX < startX)
-        {
-            int temp = startX;
-            startX = endX;
-            endX = temp;
-        }
+    //        int startX = Mathf.FloorToInt(selectionStart.x);
+    //        int startY = Mathf.FloorToInt(selectionEnd.y);
+    //        int endX = Mathf.FloorToInt(selectionStart.x);
+    //        int endY = Mathf.FloorToInt(selectionEnd.y);
 
-        if (endY < startY)
-        {
-            int temp = startY;
-            startY = endY;
-            endY = temp;
-        }
+    //        if (endX < startX)
+    //        {
+    //            int temp = startX;
+    //            startX = endX;
+    //            endX = temp;
+    //        }
 
-        for (int x = startX; x <= endX; x++)
-        {
-            for (int y = startY; y <= endY; y++)
-            {
-                selectedTiles.Add(GetTileAtWorldCoordinate(new Vector3(x, y, 0)));
-                
-            }
-        }
-        return selectedTiles;
-    }
+    //        if (endY < startY)
+    //        {
+    //            int temp = startY;
+    //            startY = endY;
+    //            endY = temp;
+    //        }
+
+    //        for (int x = startX; x <= endX; x++)
+    //        {
+    //            for (int y = startY; y <= endY; y++)
+    //            {
+    //                selectedTiles.Add(GetTileAtWorldCoordinate(new Vector3(x, y, 0)));
+
+    //            }
+    //        }
+    //        return selectedTiles;
+    //    }
 
 }
