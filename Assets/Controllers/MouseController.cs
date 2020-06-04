@@ -103,7 +103,12 @@ public class MouseController : MonoBehaviour
         {
             selectionBox.gameObject.SetActive(false);
             firstClickFlag = false;
-            //delete objects here
+
+            //delete SelectionTileAura objects here
+            foreach (GameObject selectedTileGO in allSelectedTiles)
+            {
+                selectedTileGO.SetActive(false);
+            }
                         
         }
 
@@ -195,47 +200,56 @@ public class MouseController : MonoBehaviour
             {
                 if(firstClickFlag)
                 {
-                    
-                    GameObject selectedTile = Instantiate(selectionTileAura);
-                    selectedTile.name = "MultipleSelectionTiles_" + x + "_" + y;
-                    selectedTile.transform.SetParent(this.transform);
+                    selectedTile = Instantiate(selectionTileAura);
+                    selectedTile.name = "SelectedTileUnderSelection" + x + "_" + y;
                     selectedTile.transform.position = new Vector3(x, y, 0);
-                    selectedTile.SetActive(true);
+                    selectedTile.transform.SetParent(this.transform);
+
                     allSelectedTiles.Add(selectedTile);
-                    //Debug.Log(allSelectedTiles[x,y].transform.position);
+
+                    firstClickFlag = false;
+
+                    Debug.Log("First click for drag");
                 }
                 else
                 {
-                    foreach (GameObject storedSelectedTile in allSelectedTiles)
+
+                    bool tileFound = false;
+                    for (int i = 0; i < allSelectedTiles.Count; i++)
                     {
-                        if (storedSelectedTile != null)
+
+
+                        if (allSelectedTiles[i].transform.position == new Vector3(x, y, 0))
                         {
-                            Debug.Log("Entered if storedSelectedTile != NULL !");
-                            if (storedSelectedTile.transform.position == new Vector3(x, y, 0))
-                            {
-                                Debug.Log("Entered!");
-                                selectedTile.SetActive(true);
-                            }
-                            else
-                            {
-                                Debug.Log("Entered ELSE !");
-                                selectedTile = Instantiate(selectionTileAura);
-                                selectedTile.name = "MultipleSelectionTiles_" + x + "_" + y;
-                                selectedTile.transform.SetParent(this.transform);
-                                selectedTile.transform.position = new Vector3(x, y, 0);
-                                selectedTile.SetActive(true);
-                                allSelectedTiles.Add(selectedTile);
-                            }
-                        }
-                        else
-                        {
-                            Debug.Log("storedSelectedTile is NULL");
-                        }
+                            //Debug.Log("REUSING TILES IF ENTERED");
+                            allSelectedTiles[i].SetActive(true);
+                            tileFound = true;
+                            break;
+                        }                      
+
+                    }
+
+                    if (!tileFound)
+                    {
+                        selectedTile = Instantiate(selectionTileAura);
+                        selectedTile.name = "SelectedTileUnderSelection" + x + "_" + y;
+                        selectedTile.transform.position = new Vector3(x, y, 0);
+                        selectedTile.transform.SetParent(this.transform);
+                        selectedTile.SetActive(true);
+
+                        allSelectedTiles.Add(selectedTile);
+
+                        
                     }
                 }
 
+          
+                
+
             }
         }
+
+        
         
     }
 
