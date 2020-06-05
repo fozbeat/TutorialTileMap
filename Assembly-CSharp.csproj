@@ -69,7 +69,7 @@
     <Compile Include="Assets\Models\LooseObject.cs" />
     <Compile Include="Assets\Models\Tile.cs" />
     <Compile Include="Assets\Models\World.cs" />
-    <Compile Include="Assets\Utilities\SimplePool.cs" />
+    <Compile Include="Assets\Utilities\HashedSimplePool.cs" />
     <Reference Include="UnityEngine">
       <HintPath>C:/Program Files/Unity/Hub/Editor/2019.3.15f1/Editor/Data/Managed/UnityEngine/UnityEngine.dll</HintPath>
     </Reference>
