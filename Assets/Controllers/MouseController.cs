@@ -44,8 +44,6 @@ public class MouseController : MonoBehaviour
         CheckMouseScroll();
         CheckKeyboardScroll();
         CheckZoom();
-        
-
     }
 
     void CheckKeyboardScroll()
@@ -63,7 +61,6 @@ public class MouseController : MonoBehaviour
     {
         if (Input.GetAxis("Mouse ScrollWheel") > 0 && Camera.main.orthographicSize > zoomMax) // Zoom out
             Camera.main.orthographicSize -= zoomSpeed;
-
         if (Input.GetAxis("Mouse ScrollWheel") < 0 && Camera.main.orthographicSize < zoomMin) // Zoom in
             Camera.main.orthographicSize += zoomSpeed;
     }
@@ -72,47 +69,79 @@ public class MouseController : MonoBehaviour
     {
         //Selection aura over mouse pointer
         HoverSelectionAura(selectionTileAura);
-
         
         if (Input.GetMouseButtonDown(0))
         {
             //Position where user started drag
             dragStartPosition = currFramePosition;
-            firstClickFlag = true;
-            
+        }
+        int start_x = Mathf.FloorToInt(dragStartPosition.x);
+        int end_x = Mathf.FloorToInt(currFramePosition.x);
+
+        int start_y = Mathf.FloorToInt(dragStartPosition.y);
+        int end_y = Mathf.FloorToInt(currFramePosition.y);
+
+        if (end_x < start_x)
+        {
+            int temp = start_x;
+            start_x = end_x;
+            end_x = temp;
+        }
+
+        if (end_y < start_y)
+        {
+            int temp = start_y;
+            start_y = end_y;
+            end_y = temp;
+        }
+
+        while (allSelectedTiles.Count > 0)
+        {
+            GameObject go = allSelectedTiles[0];
+            allSelectedTiles.RemoveAt(0);
+            SimplePool.Despawn(go);
         }
 
         if (Input.GetMouseButton(0))
         {
-
             CursorDragSelectionBox(selectionBox, dragStartPosition, currFramePosition);
-            SelectionAuraOnDrag(selectionTileAura, dragStartPosition, currFramePosition);
-
-            //List<Tile> tilesUnderSelection = WorldController.Instance.GetTilesUnderSelection(Vector3(), currFramePosition);
-            //SelectTiles(tilesUnderSelection);
-
-
-            //selectionBox.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, diff.x);
-            //selectionBox.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, diff.y);
-
+            
+            //swap if dragging from right to left ie start_x > end_x
+            for (int x = start_x; x <= end_x; x++)
+            {
+                for (int y = start_y; y <= end_y; y++)
+                {
+                    Tile t = WorldController.Instance.World.GetTileAt(x, y);
+                    if(t != null)
+                    {
+                        GameObject selectedTile = SimplePool.Spawn(selectionTileAura, new Vector3(x, y, 0), Quaternion.identity);
+                        selectedTile.name = "TilesUnderSelection_" + x + "_" + y;
+                        selectedTile.transform.parent = this.transform;
+                        allSelectedTiles.Add(selectedTile);
+                    }
+                }
+            }
         }
-
-
         //End drag
         if (Input.GetMouseButtonUp(0))
         {
             selectionBox.gameObject.SetActive(false);
-            firstClickFlag = false;
 
-            //delete SelectionTileAura objects here
-            foreach (GameObject selectedTileGO in allSelectedTiles)
+            for (int x = start_x; x <= end_x; x++)
             {
-                selectedTileGO.SetActive(false);
+                for (int y = start_y; y <= end_y; y++)
+                {
+                    Tile t = WorldController.Instance.World.GetTileAt(x, y);
+                    if (t != null)
+                    {
+                        t.Type = Tile.TileType.Empty;
+                    }
+                }
             }
-                        
-        }
 
-        
+
+        }
+                
         if (Input.GetMouseButton(2))
         {
             Vector3 diff = lastFramePosition - currFramePosition;
@@ -171,103 +200,7 @@ public class MouseController : MonoBehaviour
 
     }
 
-    public void SelectionAuraOnDrag(GameObject selectionTileAura, Vector3 dragStartPosition, Vector3 currFramePosition)
-    {
-        int start_x = Mathf.FloorToInt(dragStartPosition.x);
-        int end_x = Mathf.FloorToInt(currFramePosition.x);
-
-        int start_y = Mathf.FloorToInt(dragStartPosition.y);
-        int end_y = Mathf.FloorToInt(currFramePosition.y);
-
-        //swap if dragging from right to left ie start_x > end_x
-        if (end_x < start_x)
-        {
-            int temp = start_x;
-            start_x = end_x;
-            end_x = temp;
-        }
-
-        if (end_y < start_y)
-        {
-            int temp = start_y;
-            start_y = end_y;
-            end_y = temp;
-        }
-
-        for (int x = start_x; x <= end_x; x++)
-        {
-            for (int y = start_y; y <= end_y; y++)
-            {
-                if(firstClickFlag)
-                {
-                    selectedTile = Instantiate(selectionTileAura);
-                    selectedTile.name = "SelectedTileUnderSelection" + x + "_" + y;
-                    selectedTile.transform.position = new Vector3(x, y, 0);
-                    selectedTile.transform.SetParent(this.transform);
-
-                    allSelectedTiles.Add(selectedTile);
-
-                    firstClickFlag = false;
-
-                    Debug.Log("First click for drag");
-                }
-                else
-                {
-
-                    bool tileFound = false;
-                    for (int i = 0; i < allSelectedTiles.Count; i++)
-                    {
-
-
-                        if (allSelectedTiles[i].transform.position == new Vector3(x, y, 0))
-                        {
-                            //Debug.Log("REUSING TILES IF ENTERED");
-                            allSelectedTiles[i].SetActive(true);
-                            tileFound = true;
-                            break;
-                        }                      
-
-                    }
-
-                    if (!tileFound)
-                    {
-                        selectedTile = Instantiate(selectionTileAura);
-                        selectedTile.name = "SelectedTileUnderSelection" + x + "_" + y;
-                        selectedTile.transform.position = new Vector3(x, y, 0);
-                        selectedTile.transform.SetParent(this.transform);
-                        selectedTile.SetActive(true);
-
-                        allSelectedTiles.Add(selectedTile);
-
-                        
-                    }
-                }
-
-          
-                
-
-            }
-        }
-
-        
-        
-    }
-
     
-
-    //public void SelectTiles(List<Tile> tilesToSelect)
-    //{
-    //    for (int i = 0; i < tilesToSelect.Count; i++)
-    //    {
-    //        GameObject temp = Instantiate(selectionTileAura);
-    //        temp.transform.SetParent(this.transform, true);
-    //        temp.name = "SelectedTilesUnderSelection_" + i;
-    //        temp.transform.position = new Vector3(tilesToSelect[i].X, tilesToSelect[i].Y, 0);
-    //        temp.SetActive(true);
-
-    //    }
-    //}
-
 
 
 
