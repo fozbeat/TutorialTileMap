@@ -18,21 +18,19 @@ public class MouseController : MonoBehaviour
     Vector3 dragStartPosition;
     Vector3 currFramePosition;
 
-    GameObject selectedTile;
     public GameObject selectionTileAura;
     public RectTransform selectionBox;
 
-    List<GameObject> allSelectedTiles = new List<GameObject>();
-    bool firstClickFlag = false;
-
-
+    List<GameObject> allSelectedTiles;
 
     // Start is called before the first frame update
     void Start()
     {
        selectionTileAura = Instantiate(selectionTileAura);
        selectionTileAura.name = "SelectionHoverAura";
-       selectionTileAura.transform.SetParent(this.transform, true); 
+       selectionTileAura.transform.SetParent(this.transform, true);
+
+       allSelectedTiles = new List<GameObject>();
     }
 
     // Update is called once per frame
@@ -59,9 +57,16 @@ public class MouseController : MonoBehaviour
 
     void CheckZoom()
     {
+        //Mouse Zoom
         if (Input.GetAxis("Mouse ScrollWheel") > 0 && Camera.main.orthographicSize > zoomMax) // Zoom out
             Camera.main.orthographicSize -= zoomSpeed;
         if (Input.GetAxis("Mouse ScrollWheel") < 0 && Camera.main.orthographicSize < zoomMin) // Zoom in
+            Camera.main.orthographicSize += zoomSpeed;
+
+        //Keyboard Zoom
+        if ((Input.GetKey(KeyCode.Plus) || Input.GetKey(KeyCode.KeypadPlus)) && Camera.main.orthographicSize > zoomMax) // Zoom out
+            Camera.main.orthographicSize -= zoomSpeed;
+        if ((Input.GetKey(KeyCode.Minus) || Input.GetKey(KeyCode.KeypadMinus)) && Camera.main.orthographicSize < zoomMin) // Zoom in
             Camera.main.orthographicSize += zoomSpeed;
     }
 
@@ -149,7 +154,6 @@ public class MouseController : MonoBehaviour
         }
         lastFramePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         lastFramePosition.z = 0;
-
     }
 
     public void HoverSelectionAura(GameObject selectionTileAura)
@@ -197,12 +201,5 @@ public class MouseController : MonoBehaviour
 
         }
         selectionBox.sizeDelta = diff;
-
     }
-
-    
-
-
-
-
 }
