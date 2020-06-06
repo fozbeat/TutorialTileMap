@@ -175,6 +175,8 @@ public class MouseController : MonoBehaviour
         if (!selectionBox.gameObject.activeInHierarchy)
             selectionBox.gameObject.SetActive(true);
 
+        currFramePosition = Camera.main.WorldToScreenPoint(currFramePosition);
+        dragStartPosition = Camera.main.WorldToScreenPoint(dragStartPosition);
         Vector3 diff = currFramePosition - dragStartPosition;
 
         if (diff.x < 0 && diff.y < 0)
