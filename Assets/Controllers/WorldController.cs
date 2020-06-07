@@ -21,7 +21,7 @@ public class WorldController : MonoBehaviour
         Instance = this;
         //Create a world with empty tiles
         //Default arguments in constructore eg: 100 x 100
-        World = new World();
+        World = new World(50, 50);
 
         //Create GameObjects ie. tiles to link them to visual port
         for (int x = 0; x < World.Width; x++)

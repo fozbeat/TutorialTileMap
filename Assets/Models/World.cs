@@ -50,9 +50,8 @@ public class World
 
     public Tile GetTileAt(int x, int y)
     {
-        if (x > width || x < 0 || y > height || y < 0)
+        if (x >= width || x < 0 || y >= height || y < 0)
         {
-           // Debug.Log("Tile (" + x + "," + y + "), is out of map tiles.");
             return null;
         } else
             return tiles[x, y];

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
+using UnityEngine.EventSystems;
 
 public class MouseController : MonoBehaviour
 {
@@ -22,13 +23,14 @@ public class MouseController : MonoBehaviour
     public RectTransform selectionBox;
 
     List<GameObject> allSelectedTiles;
+    Tile.TileType selectedTileType = Tile.TileType.Empty;
 
     // Start is called before the first frame update
     void Start()
     {
-       selectionTileAura = Instantiate(selectionTileAura);
-       selectionTileAura.name = "SelectionHoverAura";
-       selectionTileAura.transform.SetParent(this.transform, true);
+       //selectionTileAura = Instantiate(selectionTileAura);
+       //selectionTileAura.name = "SelectionHoverAura";
+       //selectionTileAura.transform.SetParent(this.transform, true);
 
        allSelectedTiles = new List<GameObject>();
     }
@@ -38,10 +40,11 @@ public class MouseController : MonoBehaviour
     {
         currFramePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         currFramePosition.z = 0;
-        
-        CheckMouseScroll();
+       
         CheckKeyboardScroll();
         CheckZoom();
+        CheckMouseScroll();
+        
     }
 
     void CheckKeyboardScroll()
@@ -72,14 +75,23 @@ public class MouseController : MonoBehaviour
 
     void CheckMouseScroll()
     {
-        //Selection aura over mouse pointer
-        HoverSelectionAura(selectionTileAura);
-        
+
+
+        //Selection aura over mouse pointer. When this is active the scrolling seem to become patchy. WHY!
+        //HoverSelectionAura(selectionTileAura);
+
+        //if (EventSystem.current.IsPointerOverGameObject())
+        //    return;
+
+        if (EventSystem.current.IsPointerOverGameObject())
+            return;
+
         if (Input.GetMouseButtonDown(0))
         {
             //Position where user started drag
             dragStartPosition = currFramePosition;
         }
+
         int start_x = Mathf.FloorToInt(dragStartPosition.x);
         int end_x = Mathf.FloorToInt(currFramePosition.x);
 
@@ -109,9 +121,11 @@ public class MouseController : MonoBehaviour
 
         if (Input.GetMouseButton(0))
         {
-            CursorDragSelectionBox(selectionBox, dragStartPosition, currFramePosition);
+            //Disabling cursor drag selectionbox. It conflicts with the return condtion in checkmousescroll
+            //EventSystem.current.isPointerOverGameObject() causes a class as it is a part of the update loop
+
+            //CursorDragSelectionBox(selectionBox, dragStartPosition, currFramePosition);
             
-            //swap if dragging from right to left ie start_x > end_x
             for (int x = start_x; x <= end_x; x++)
             {
                 for (int y = start_y; y <= end_y; y++)
@@ -139,7 +153,7 @@ public class MouseController : MonoBehaviour
                     Tile t = WorldController.Instance.World.GetTileAt(x, y);
                     if (t != null)
                     {
-                        t.Type = Tile.TileType.Empty;
+                        t.Type = selectedTileType;
                     }
                 }
             }
@@ -158,7 +172,17 @@ public class MouseController : MonoBehaviour
 
     public void HoverSelectionAura(GameObject selectionTileAura)
     {
+
+        //if pointer is over a UI game object then disable the selecitontileaura
+        if (EventSystem.current.IsPointerOverGameObject())
+        {
+            selectionTileAura.SetActive(false);
+            return;
+        }
+
         Tile tileUnderMouse = WorldController.Instance.GetTileAtWorldCoordinate(currFramePosition);
+
+        
 
         if (tileUnderMouse != null)
         {
@@ -204,4 +228,18 @@ public class MouseController : MonoBehaviour
         }
         selectionBox.sizeDelta = diff;
     }
+
+    //Function for UI "TILE" button
+    public void setTileTypeFloor()
+    {
+        selectedTileType = Tile.TileType.Floor;
+       
+    }
+
+    public void setTileTypeEmpty()
+    {
+        selectedTileType = Tile.TileType.Empty;
+        
+    }
+
 }
